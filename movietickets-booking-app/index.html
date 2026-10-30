@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CineBook — District Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a1a;
+    --bg-elevated: #1a1229;
+    --card: #211833;
+    --card-hover: #2a1f42;
+    --purple: #a855f7;
+    --purple-soft: #c084fc;
+    --purple-dim: rgba(168, 85, 247, 0.15);
+    --pink: #ec4899;
+    --text: #f3e8ff;
+    --muted: #9ca3af;
+    --border: rgba(168, 85, 247, 0.12);
+    --green: #22c55e;
+    --red: #ef4444;
+    --radius: 18px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(15, 10, 26, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;
+  }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 1.1rem;
+  }
+  .brand span { background: linear-gradient(135deg, var(--purple-soft), var(--pink)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--purple-dim);
+    color: var(--purple-soft);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
+
+  /* ---------- MAIN ---------- */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Section title */
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  /* ---------- MOVIE CARDS (District style: horizontal scroll / vertical list) ---------- */
+  .movies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .movie-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .movie-card:hover {
+    background: var(--card-hover);
+    border-color: rgba(168, 85, 247, 0.25);
+  }
+
+  .movie-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .poster-box {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--purple-dim), rgba(236, 72, 153, 0.1));
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .movie-info h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 0.2rem;
+  }
+  .movie-info .meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* Show chips — District style */
+  .show-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.55rem 1rem;
+    border-radius: 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .chip:hover:not(.sold-out) {
+    background: var(--purple-dim);
+    border-color: rgba(168, 85, 247, 0.4);
+    transform: translateY(-1px);
+  }
+  .chip .time { color: var(--text); }
+  .chip .price { font-size: 0.7rem; color: var(--purple-soft); font-weight: 500; }
+  .chip .left { font-size: 0.65rem; color: var(--muted); font-weight: 400; }
+  .chip.sold-out {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+
+  /* ---------- SEAT PAGE ---------- */
+  .back-row {
+    margin-bottom: 1.25rem;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--purple-dim);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    color: var(--purple-soft);
+    padding: 0.45rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { background: rgba(168, 85, 247, 0.25); }
+
+  .show-header {
+    margin-bottom: 1.5rem;
+  }
+  .show-header h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 0.35rem;
+  }
+  .show-header .meta-row {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+
+  /* Screen */
+  .screen-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .screen {
+    width: 70%;
+    max-width: 400px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, transparent, var(--purple), transparent);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+    position: relative;
+  }
+  .screen::after {
+    content: "SCREEN";
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.55rem;
+    letter-spacing: 6px;
+    color: var(--muted);
+  }
+
+  /* Seat grid — District style cleaner */
+  .seat-grid {
+    display: grid;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .seat {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  .seat.available {
+    background: rgba(34, 197, 94, 0.25);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+  .seat.available:hover {
+    background: rgba(34, 197, 94, 0.45);
+    transform: scale(1.1);
+  }
+  .seat.selected {
+    background: var(--purple);
+    border: 1px solid var(--purple-soft);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+    transform: scale(1.05);
+  }
+  .seat.booked {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    cursor: not-allowed;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 0.35rem; }
+  .legend .dot { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+  .legend .dot.available { background: rgba(34, 197, 94, 0.25); border: 1px solid rgba(34, 197, 94, 0.4); }
+  .legend .dot.selected { background: var(--purple); }
+  .legend .dot.booked { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.25); }
+
+  /* Summary */
+  .summary-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .summary-stats {
+    display: flex;
+    gap: 2rem;
+  }
+  .stat-item { display: flex; flex-direction: column; gap: 0.15rem; }
+  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; }
+  .stat-value { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+  .stat-value.highlight { color: var(--purple-soft); }
+
+  #confirmBtn {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.8rem;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
+  }
+  #confirmBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.5);
+  }
+  #confirmBtn:disabled {
+    background: var(--bg-elevated);
+    color: var(--muted);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .demo-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 1rem;
+    opacity: 0.6;
+  }
+
+  /* ---------- MODAL (District style) ---------- */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 10, 26, 0.85);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 1rem;
+  }
+  .modal.active { display: flex; }
+
+  .modal-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 380px;
+    width: 100%;
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+  .modal-box h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, var(--purple-soft), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  #modalDetails {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.8;
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+  }
+  #modalDetails strong { color: var(--purple-soft); }
+  .modal-note { font-size: 0.7rem; color: var(--muted); margin-top: 0.75rem; }
+
+  #modalOk {
+    margin-top: 1.25rem;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: #fff;
+    border: none;
+    padding: 0.7rem 2rem;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: 100%;
+    transition: filter 0.2s;
+  }
+  #modalOk:hover { filter: brightness(1.1); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 0.85rem 1rem; }
+    .brand { font-size: 1.15rem; }
+    .brand .logo { width: 28px; height: 28px; font-size: 0.95rem; }
+    main { padding: 1rem 0.75rem 3rem; }
+    .page-title { font-size: 1.25rem; }
+    .show-header h2 { font-size: 1.2rem; }
+    .seat { width: 25px; height: 25px; }
+    .seat-grid { gap: 5px; padding: 0.75rem; }
+    .summary-card { flex-direction: column; align-items: stretch; text-align: center; }
+    .summary-stats { justify-content: center; }
+    #confirmBtn { width: 100%; }
+    .chip { padding: 0.45rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">🎬</div>
+    <span>CineBook</span>
+  </div>
+  <span class="badge">Demo</span>
+</header>
+
+<main>
+  <!-- MOVIES PAGE -->
+  <section id="pageMovies" class="page active">
+    <h2 class="page-title">Now Showing</h2>
+    <div id="moviesList" class="movies-list"></div>
+  </section>
+
+  <!-- SEAT PAGE -->
+  <section id="pageSeats" class="page">
+    <div class="back-row">
+      <button id="backBtn" class="back-btn">← Back</button>
+    </div>
+
+    <div class="show-header">
+      <h2 id="seatTitle"></h2>
+      <div class="meta-row" id="seatMeta"></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen"></div>
+    </div>
+
+    <div id="seatGrid" class="seat-grid"></div>
+
+    <div class="legend">
+      <span><i class="dot available"></i> Available</span>
+      <span><i class="dot selected"></i> Selected</span>
+      <span><i class="dot booked"></i> Booked</span>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-stats">
+        <div class="stat-item">
+          <span class="stat-label">Seats</span>
+          <span class="stat-value" id="seatCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total</span>
+          <span class="stat-value highlight" id="seatTotal">₹0</span>
+        </div>
+      </div>
+      <button id="confirmBtn" disabled>Confirm</button>
+    </div>
+
+    <p class="demo-note">Demo only — nothing is saved</p>
+  </section>
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div class="modal-icon">🎉</div>
+    <h2>Booking Confirmed!</h2>
+    <p id="modalDetails"></p>
+    <p class="modal-note">This is a demo — no real booking was made.</p>
+    <button id="modalOk">Got it</button>
+  </div>
+</div>
+
+<script>
+const MOVIES = [
+  { id: "m1", title: "Inception", genre: "Sci-Fi · Thriller", poster: "🌀", shows: [
+    { id: "s1", time: "10:00 AM", price: 250, rows: 5, cols: 10,
+      booked: ["R1C1","R1C2","R3C5","R4C7","R5C10"] },
+    { id: "s2", time: "02:30 PM", price: 300, rows: 5, cols: 10,
+      booked: ["R2C3","R2C4","R2C5"] }
+  ]},
+  { id: "m2", title: "Interstellar", genre: "Sci-Fi · Drama", poster: "🚀", shows: [
+    { id: "s3", time: "11:00 AM", price: 280, rows: 5, cols: 10, booked: [] },
+    { id: "s4", time: "06:00 PM", price: 350, rows: 5, cols: 10,
+      booked: ["R5C1","R5C2","R5C3","R1C8","R1C9"] }
+  ]},
+  { id: "m3", title: "The Dark Knight", genre: "Action · Crime", poster: "🦇", shows: [
+    { id: "s5", time: "09:00 PM", price: 320, rows: 5, cols: 10,
+      booked: ["R3C3","R3C4","R3C5","R3C6"] }
+  ]}
+];
+
+let currentShow = null;
+let selectedSeats = [];
+
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function loadMovies() {
+  const list = document.getElementById("moviesList");
+  list.innerHTML = "";
+  MOVIES.forEach(movie => {
+    const card = document.createElement("div");
+    card.className = "movie-card";
+    card.innerHTML = `
+      <div class="movie-row">
+        <div class="poster-box">${movie.poster}</div>
+        <div class="movie-info">
+          <h3>${movie.title}</h3>
+          <div class="meta">${movie.genre}</div>
+        </div>
+      </div>
+      <div class="show-chips" id="chips-${movie.id}"></div>
+    `;
+    const chipsWrap = card.querySelector(`#chips-${movie.id}`);
+    movie.shows.forEach(show => {
+      const total = show.rows * show.cols;
+      const available = total - show.booked.length;
+      const chip = document.createElement("div");
+      chip.className = "chip" + (available === 0 ? " sold-out" : "");
+      chip.innerHTML = `
+        <span class="time">${show.time}</span>
+        <span class="price">₹${show.price}</span>
+        <span class="left">${available} left</span>
+      `;
+      if (available > 0) chip.onclick = () => openSeatPage(movie, show);
+      chipsWrap.appendChild(chip);
+    });
+    list.appendChild(card);
+  });
+}
+
+function openSeatPage(movie, show) {
+  currentShow = { ...show, movieTitle: movie.title };
+  selectedSeats = [];
+  document.getElementById("seatTitle").textContent = movie.title;
+  document.getElementById("seatMeta").innerHTML = `
+    <span>🕒 ${show.time}</span>
+    <span>₹${show.price} / seat</span>
+    <span>${show.rows * show.cols} seats</span>
+  `;
+  renderSeatGrid();
+  updateSummary();
+  showPage("pageSeats");
+}
+
+function renderSeatGrid() {
+  const grid = document.getElementById("seatGrid");
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `repeat(${currentShow.cols}, 28px)`;
+  for (let r = 0; r < currentShow.rows; r++) {
+    for (let c = 0; c < currentShow.cols; c++) {
+      const label = `R${r+1}C${c+1}`;
+      const seat = document.createElement("div");
+      seat.className = "seat";
+      seat.title = label;
+      if (currentShow.booked.includes(label)) {
+        seat.classList.add("booked");
+      } else {
+        seat.classList.add("available");
+        seat.onclick = () => toggleSeat(seat, label);
+      }
+      grid.appendChild(seat);
+    }
+  }
+}
+
+function toggleSeat(el, label) {
+  if (selectedSeats.includes(label)) {
+    selectedSeats = selectedSeats.filter(s => s !== label);
+    el.classList.remove("selected");
+    el.classList.add("available");
+  } else {
+    selectedSeats.push(label);
+    el.classList.remove("available");
+    el.classList.add("selected");
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  document.getElementById("seatCount").textContent = selectedSeats.length;
+  document.getElementById("seatTotal").textContent =
+    `₹${selectedSeats.length * (currentShow?.price || 0)}`;
+  document.getElementById("confirmBtn").disabled = selectedSeats.length === 0;
+}
+
+document.getElementById("confirmBtn").onclick = () => {
+  const total = selectedSeats.length * currentShow.price;
+  document.getElementById("modalDetails").innerHTML = `
+    <strong>${currentShow.movieTitle}</strong><br>
+    🕒 ${currentShow.time}<br>
+    💺 ${selectedSeats.join(", ")}<br>
+    💰 <strong>₹${total}</strong>
+  `;
+  document.getElementById("modal").classList.add("active");
+};
+
+document.getElementById("modalOk").onclick = () => {
+  document.getElementById("modal").classList.remove("active");
+  selectedSeats = [];
+  openSeatPage({ title: currentShow.movieTitle }, currentShow);
+};
+
+document.getElementById("backBtn").onclick = () => {
+  selectedSeats = [];
+  showPage("pageMovies");
+};
+
+loadMovies();
+</script>
+</body>
+</html>
